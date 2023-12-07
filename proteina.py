@@ -1,3 +1,5 @@
+from heap import Heap
+
 class Proteina(object):
     def __init__(self, codigo, secuencia, estructura):
         # datos
@@ -37,6 +39,30 @@ class Proteina(object):
 
     def set_secuencia_est(self, secuencia):
         self.secuencia_est = secuencia
+
+
+    def set_aa_mas_frec(self):
+        aa = ""
+        mayor = 0
+        contador = 0
+        heap = Heap(self.largo_secuencia)
+        for letra in self.secuencia:
+            heap.agregar(letra)
+        heap.monticulizar()
+        heap.HeapSort()
+        ordenado = heap.get_vector()
+        actual = ordenado[0]
+        for i in range(len(ordenado)):
+            if ordenado[i] == actual:
+                contador += 1
+            else:
+                if contador > mayor:
+                    mayor = contador
+                    aa = actual
+                actual = ordenado[i]
+                contador = 1
+
+        self.aa_mas_frecuente = aa
 
 
     def set_cant_est_alfa(self):
