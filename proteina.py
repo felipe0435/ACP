@@ -4,17 +4,16 @@ class Proteina(object):
     def __init__(self, codigo, secuencia, estructura):
         # datos
         self.codigo = codigo
+        self.largo_secuencia = len(secuencia)
         self.secuencia = secuencia
-        self.largo_secuencia = 0
         self.secuencia_est = estructura
-        # secuencias
-        self.secuencia_aa = None
         # Cantidad de estructuras secuendarias
         self.cant_est_alfa = 0
         self.cant_est_beta = 0
         # Frecuencias
         self.aa_mas_frecuente = 0
         self.est_dominante = 0
+        self.conteo = {}
 
         """
         self.peso_molecular = 0
@@ -56,6 +55,7 @@ class Proteina(object):
             if ordenado[i] == actual:
                 contador += 1
             else:
+                self.conteo[actual] = contador
                 if contador > mayor:
                     mayor = contador
                     aa = actual
@@ -130,6 +130,10 @@ class Proteina(object):
 
     def get_estructura_dominante(self):
         return self.est_dominante
+
+
+    def get_conteo(self):
+        return self.conteo
 
 
     """

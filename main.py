@@ -18,7 +18,7 @@ def main():
                 proteinas.append(proteina)
 
     for i in range(5877):
-        print(proteinas[i].get_aa_mas_frecuente())
+        print(proteinas[i].get_conteo())
 
 
 if __name__ == '__main__':
