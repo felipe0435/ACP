@@ -2,8 +2,7 @@ import csv
 from proteina import Proteina
 
 
-
-def main():
+def crear_lista():
     proteinas = []
     with open("PDB.csv") as tsvF:
         for i in range(5878):
@@ -17,6 +16,11 @@ def main():
                 proteina.set_cant_est_beta()
                 proteinas.append(proteina)
 
+    return proteinas
+
+
+def main():
+    proteinas = crear_lista()
     for i in range(5877):
         print(proteinas[i].get_conteo())
 

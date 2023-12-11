@@ -47,7 +47,7 @@ class Proteina(object):
         heap = Heap(self.largo_secuencia)
         for letra in self.secuencia:
             heap.agregar(letra)
-        heap.monticulizar()
+        #heap.monticulizar()
         heap.HeapSort()
         ordenado = heap.get_vector()
         actual = ordenado[0]
