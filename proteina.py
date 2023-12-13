@@ -3,10 +3,10 @@ from heap import Heap
 class Proteina(object):
     def __init__(self, codigo, secuencia, estructura):
         # datos
-        self.codigo = codigo
-        self.largo_secuencia = len(secuencia)
-        self.secuencia = secuencia
-        self.secuencia_est = estructura
+        self.codigo = codigo[0:4]
+        #self.largo_secuencia = len(secuencia)
+        self.secuencia = {codigo[4]: secuencia}
+        self.secuencia_est = {codigo[4]: estructura}
         # Cantidad de estructuras secuendarias
         self.cant_est_alfa = 0
         self.cant_est_beta = 0
@@ -14,55 +14,52 @@ class Proteina(object):
         self.aa_mas_frecuente = 0
         self.est_dominante = 0
         self.conteo = {}
-
         """
         self.peso_molecular = 0
         se calcularia multiplicando por un valor fijo cada aminoacido (puede ir
         se a la mierda si es que lo hacemos con los 5900)
         """
+        #self.set_largo_secuencia()
+        #self.set_aa_mas_frec()
+        self.set_cant_est_alfa()
+        self.set_cant_est_beta()
 
 
     # Get y Set
     def set_codigo(self, codigo):
         self.codigo = codigo
 
-
+    """
     def set_largo_secuencia(self):
         largo = len(self.secuencia)
         self.largo_secuencia = largo
+    """
 
-
-    def set_secuencia(self, secuencia):
-        self.secuencia = secuencia
-
-
-    def set_secuencia_est(self, secuencia):
-        self.secuencia_est = secuencia
+    def set_secuencia(self, codigo, secuencia, estructura):
+        self.secuencia[codigo[4]] = secuencia
+        self.secuencia_est[codigo[4]] = estructura
 
 
     def set_aa_mas_frec(self):
-        aa = ""
-        mayor = 0
-        contador = 0
-        heap = Heap(self.largo_secuencia)
-        for letra in self.secuencia:
-            heap.agregar(letra)
-        #heap.monticulizar()
-        heap.HeapSort()
-        ordenado = heap.get_vector()
-        actual = ordenado[0]
-        for i in range(len(ordenado)):
-            if ordenado[i] == actual:
-                contador += 1
-            else:
-                self.conteo[actual] = contador
-                if contador > mayor:
-                    mayor = contador
-                    aa = actual
-                actual = ordenado[i]
-                contador = 1
-
-        self.aa_mas_frecuente = aa
+        for secuencia in self.secuencia:
+            if secuencia not in self.conteo:
+                dic ={}
+                contador = 0
+                heap = Heap(len(self.secuencia[secuencia]))
+                for letra in self.secuencia[secuencia]:
+                    heap.agregar(letra)
+                #heap.monticulizar()
+                heap.HeapSort()
+                ordenado = heap.get_vector()
+                actual = ordenado[0]
+                for i in range(len(ordenado)):
+                    if ordenado[i] == actual:
+                        contador += 1
+                    else:
+                        dic[actual] = contador
+                        actual = ordenado[i]
+                        contador = 1
+                self.conteo[secuencia] = dic
 
 
     def set_cant_est_alfa(self):
@@ -107,10 +104,10 @@ class Proteina(object):
     def get_secuencia(self):
         return self.secuencia
 
-
-    def get_largo_secuencia(self):
-        return self.largo_secuencia
-
+    """
+        def get_largo_secuencia(self):
+            return self.largo_secuencia
+    """
 
     def get_secuencia_aa(self):
         return self.secuencia_aa
@@ -136,6 +133,10 @@ class Proteina(object):
         return self.conteo
 
 
-    """
-    self.aa_mas_frecuente = None
-    """
+    def imprimir_proteina(self):
+        txt = (f"La proteina de codigo {self.get_codigo()}, tiene la siguietes "
+                "caracteristicas:\n")
+        for secuencia in self.secuencia:
+            txt = f"{txt}secuencia {secuencia}:\n>{self.secuencia[secuencia]}\n"
+            txt = f"{txt}sst3 {secuencia}:\n>{self.secuencia_est[secuencia]}\n"
+        print(txt)
