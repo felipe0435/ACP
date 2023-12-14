@@ -429,8 +429,7 @@ def main():
     # Generacion de lista
     proteinas = crear_lista()
     # Menu
-    print("Hola, bienvenido a un pequeño proyecto del modulo "
-            "Algoritmo y Estrucura de datos")
+    print("Hola, bienvenido a Protein data search")
     opcion = ""
     while opcion != 'x':
         print("Seleccione alguna de las opciones por favor")
