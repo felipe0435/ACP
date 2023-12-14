@@ -1,25 +1,33 @@
 import csv
+from heap import Heap
 from proteina import Proteina
-import random
 
 
 def busqueda_bin(lista, elem, izq, der):
     mitad = (der + izq) // 2
-    print("mitad:", mitad, "izq:", izq, "der:", der)
-    print(lista[mitad].get_codigo())
     if izq > der:
         return None
     elif elem == lista[mitad].get_codigo():
-        print("CORRECTO")
-        return lista[mitad]
+        return mitad
     elif elem > lista[mitad].get_codigo():
         return busqueda_bin(lista, elem, mitad + 1, der)
     elif elem < lista[mitad].get_codigo():
         return busqueda_bin(lista, elem, izq, mitad - 1)
 
 
+def ordenar(proteinas):
+    heap = Heap(len(proteinas))
+    for proteina in proteinas:
+        heap.arribo(proteina, proteina.get_codigo())
+    heap.heapsort_prioridad()
+    for i in range(len(heap.get_vector())):
+        proteinas[i] = heap.get_vector()[i][1]
+
+
 def crear_lista():
+    # Lista de proteinas
     proteinas = []
+    # Abre el archivo
     with open("PDB.csv") as tsvF:
         reader = csv.reader(tsvF)
         cont = 0
@@ -27,11 +35,12 @@ def crear_lista():
             if cont > 0:
                 if (len(proteinas) > 0) and (proteinas[len(proteinas) - 1]
                                             .get_codigo() == row[1][0:4]):
-                    proteinas[len(proteinas) - 1].set_secuencia(row[1],
+                    proteinas[len(proteinas) - 1].set_secuencias(row[1],
                                                                 row[2],
                                                                 row[3])
                     proteinas[len(proteinas) - 1].set_aa_mas_frec()
                 else:
+                    # Genera el objeto y lo añande a la lista
                     proteina = Proteina(row[1], row[2], row[3])
                     proteina.set_aa_mas_frec()
                     proteinas.append(proteina)
@@ -39,113 +48,320 @@ def crear_lista():
     return proteinas
 
 
-def busca_codigo(proteinas):
+def determinar_estructura(proteinas, estructura):
+    match estructura:
+        case "Alfa":
+            pass
+        case "Beta":
+            pass
+        case "Ambas":
+            pass
+
+
+def agregar(proteinas):
+    # Datos iniciales
+    AMINOACIDOS = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N",
+                    "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z"]
+    # Mencion del codigo de la proteina a agregar
     codigo = ""
     while len(codigo) != 4:
-        print("\tIngrese acontinuacion el codigo de la proteina, de lo "
-                "contrario seleccione 'x' para salir")
+        print("\tIngrese acontinuacion un codigo de 4 caracteres, de los "
+                "cuales el primero debe ser un numero")
         codigo = input("\t> ").lower()
         if len(codigo) == 4:
-            proteina = busqueda_bin(proteinas, codigo, 0, len(proteinas) - 1)
-            print(proteina)
-            proteina.imprimir_proteina()
-            break
-        elif codigo == "x":
-            print("\t\tVolviendo al menu anterior")
+            indice = busqueda_bin(proteinas, codigo, 0, len(proteinas) - 1)
+            if not codigo[0].isnumeric():
+                print("\tEste codigo no es aceptable, coloque un numero en "
+                        "en el primer caracter")
+            elif busqueda_bin(proteinas, codigo, 0, len(proteinas) - 1) == None:
+                print("\tSe ha guardado el codigo. "
+                        "Se creara una nueva proteina")
+                # Mencion de la cadena a crear
+                cadena = ""
+                while cadena.isnumeric() or len(cadena) != 1:
+                    print("\tIngrese acontinuacion un una letra, la cual hace "
+                            "refencia a cadena de la proteina")
+                    cadena = input("\t> ").upper()
+                    if not cadena.isnumeric():
+                        print("\tSe ha guardado la cadena")
+                        break
+                    else:
+                        print("\tVuelva a intentarlo.")
+                break
+            else:
+                # Mencion de la cadena a crear
+                cadena = ""
+                while cadena.isnumeric() or len(cadena) != 1:
+                    print("\tIngrese acontinuacion un una letra, la cual hace "
+                            "refencia a cadena de la proteina")
+                    cadena = input("\t> ").upper()
+                    if not cadena.isnumeric() or len(cadena) != 1:
+                        existe = False
+                        indice = busqueda_bin(proteinas, codigo, 0,
+                                                len(proteinas) - 1)
+                        for letra_cadena in proteinas[indice].get_secuencia():
+                            if letra_cadena == cadena:
+                                existe = True
+                        if not existe:
+                            print("\tSe a guardado la cadena. Se añadira a la "
+                                    "proteina")
+                            break
+                        else:
+                            print("\tSu cadena en la proteina ya existe, "
+                                    "elija un caracter distinto")
+                    else:
+                        print("\tVuelva a intentarlo.")
+        else:
+            print("\tEste código no tiene 4 dígitos, "
+                    "por favor ingrese otro.")
+        codigo = ""
+    # Mencion de la secuencia a agregar
+    secuencia = ""
+    correcto = True
+    while secuencia not in AMINOACIDOS:
+        print("\tIngrese acontinuacion el secuencia de la proteina que quiere "
+                "ingresar")
+        secuencia = input("\t> ").upper()
+        for letra in secuencia:
+            if letra not in AMINOACIDOS:
+                correcto = False
+                break
+        if correcto:
+            print("\tSe a guardado la secuencia.")
             break
         else:
-            print("Vuelva a intentarlo.")
-            print("Si quiere volver presione 'x'")
+            print("\tVuelva a intentarlo.")
+        secuencia = ""
+    # Mencion de la estrctura que tomara la secuencia de la proteina
+    estructura = ""
+    correcto = True
+    while estructura not in ["C", "E", "H"]:
+        print("\tIngrese acontinuacion el estructura de la proteina que quiere "
+                "ingresar")
+        estructura = input("\t> ").upper()
+        for letra in estructura:
+            if letra not in ["C", "E", "H"]:
+                correcto = False
+                break
+        if correcto and len(estructura) == len(secuencia):
+            print("\tSe a guardado la estructura.")
+            break
+        else:
+            print("\tVuelva a intentarlo. Puede que la longitud de la "
+                    "estructura sea distinta a la de la secuencia")
+        estructura = ""
+    # creacion del objeto y agregado al la lista
+    codigo = f"{codigo}{cadena}"
+    new_proteina = Proteina(codigo, secuencia, estructura)
+    proteinas.append(new_proteina)
 
-
-def busca_tamanio(proteinas):
-    opcion2 = ""
-    while opcion2 != 'x':
+def editar(proteinas):
+    codigo = ""
+    while len(codigo) != 4:
+        print("\tIngrese acontinuacion un codigo de 4 caracteres, de los "
+                "cuales el primero debe ser un numero")
+        codigo = input("\t> ").lower()
+        if len(codigo) == 4:
+            if not codigo[0].isnumeric():
+                print("\tEste codigo no es aceptable, coloque un numero en "
+                        "en el primer caracter")
+            elif busqueda_bin(proteinas, codigo,
+                                0, len(proteinas) - 1) == None:
+                print("\tEste código no existe, vuelva a intentarlo.")
+            else:
+                indice = busqueda_bin(proteinas, codigo, 0, len(proteinas) - 1)
+                print("\tCodigo aceptado")
+            break
+        else:
+            print("\tEste código no tiene 4 dígitos, "
+                    "por favor ingrese otro.")
+        codigo = ""
+    opcion3 = ""
+    # Menu 3
+    while opcion3 != 'x':
         print("\tSeleccione alguna de las opciones por favor")
-        print("\tOpciones:")
-        print("\t1) Buscar proteina mas grande")
-        print("\t2) Buscar proteina mas pequeña")
+        print("\tOpciones a editar:")
+        print("\t1) Codigo")
         print("\tx) Salir")
-        opcion2 = input("\t> ").lower()
-        match opcion2:
+        opcion3 = input("\t> ").lower()
+        # Seleccion del menu
+        match opcion3:
             case "1":
-                print("\t>Ha seleccionado la proteina mas grande")
-                opcion3 = ""
-                while opcion3 != "x":
-                    opcion3 = input("\t>Indiquie la cantidad de proteinas a"
-                                    " buscar, sino marque 'x'")
-                    if isinstance(opcion3, int):
-                        if int(opcion3) > 0:
-                            #Aqui va una funcion
-                            opcion3 = "x"
-                        else:
-                            print("Ingrese un digito valido")
-                    elif opcion3.lower() == "x":
-                        print("\t\tVolviendo al menu anterior")
-                    else:
-                        print("Ingrese un valor valido")
-            case "2":
-                print("\t>Ha seleccionado la proteina mas pequeña")
-                opcion3 = ""
-                while opcion3 != "x":
-                    opcion3 = input("\t>Indiquie la cantidad de proteinas a"
-                                    " buscar, sino marque 'x'")
-                    if isinstance(opcion3, int):
-                        if int(opcion3) > 0:
-                            #Aqui va una funcion
-                            opcion3 = "x"
-                        else:
-                            print("Ingrese un digito valido")
-                    elif opcion3.lower() == "x":
-                        print("\t\tVolviendo al menu anterior")
-                    else:
-                        print("Ingrese un valor valido")
+                print("\tHa seleccionado codigo\n")
+                proteinas[indice].set_codigo(codigo)
+                proteinas[indice].imprimir_proteina_resumen()
+                ordenar(proteinas)
+                break
             case "x":
-                print("\t\tVolviendo al menu anterior")
+                print("\t\tVolviendo al menu anterior\n")
+                break
             case _:
                 print("_______________________________\n"
                         "|¡Ingrese un valor pertinente!|\n"
-                        "_______________________________")
+                        "_______________________________\n")
+
+
+def busca_codigo(proteinas, eliminar):
+    codigo = ""
+    # Bandera para que se busque solo codigos de 4 caracteres
+    while len(codigo) != 4:
+        print("\tIngrese acontinuacion el codigo de la proteina que busca, "
+                "de lo contrario seleccione 'x' para salir")
+        codigo = input("\t> ").lower()
+        # Codigo valido
+        if len(codigo) == 4:
+            indice = busqueda_bin(proteinas, codigo, 0, len(proteinas) - 1)
+            # Se revisa si la proteina existe
+            if busqueda_bin(proteinas, codigo, 0, len(proteinas) - 1) != None:
+                # Dependiendo de la funcion elegida antes se decide si se
+                # elimina o muestra la proteina buscada
+                if eliminar:
+                    print("\t¿Desea eliminar la siguiente proteína? s/n")
+                    proteinas[indice].imprimir_proteina_completa()
+                    respuesta = ""
+                    while len(respuesta) != 1:
+                        respuesta = input("> ").lower()
+                        if respuesta == 's':
+                            proteinas.pop(indice)
+                            break
+                        elif respuesta == 'n':
+                            break
+                        else:
+                            print("\tCaracter inválido, por favor ingrese "
+                                    "s(si) o n(no).")
+                else:
+                    print("\tLa proteina que busco es:")
+                    proteinas[indice].imprimir_proteina_completa()
+                break
+            else:
+                print("\tEste código no se encuentra en la base de datos, "
+                        "por favor ingrese otro.")
+        # Salida
+        elif codigo == "x":
+            print("\t\tVolviendo al menu anterior")
+            break
+        # Otro intento
+        else:
+            print("\tVuelva a intentarlo.")
 
 
 def busca_aa(proteinas):
+    # Datos iniciales
     AMINOACIDOS = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N",
                     "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z"]
     amino_acido = ""
+    respuestas = []
+    # Bandera para que solo ingrese 1 caracter
     while len(amino_acido) != 1:
         print("\tIngrese acontinuacion un aminoacido en codigo de 1 letra, de "
-                "lo contrario seleccione O para salir")
+                "lo contrario seleccione 0 para salir\n\tLas opciones son: A, "
+                "C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, X, Y, Z")
         amino_acido = input("\t> ").upper()
+        # Aminoacido valido
         if amino_acido in AMINOACIDOS:
-            # Aqui va la funcion
+            heap = Heap(len(proteinas))
+            for proteina in proteinas:
+                heap.arribo(proteina, proteina.get_aa_mas_frecuente()[0])
+            heap.heapsort_prioridad()
+            for elem in heap.get_vector():
+                if elem[0] == amino_acido:
+                    respuestas.append(elem[1])
+                elif (elem[0] != amino_acido and len(respuestas) > 0):
+                    break
+            for respuesta in respuestas:
+                respuesta.imprimir_proteina_resumen()
             break
-        elif amino_acido == "O":
+        # Salida
+        elif amino_acido == "0":
             print("\t\tVolviendo al menu anterior")
             break
+        # Otro intento
         else:
-            print("Vuelva a intentarlo.")
-            print("Si quiere volver presione 'O'")
+            print("\tVuelva a intentarlo.")
+
+
+def busca_estructura(proteinas):
+    opcion2 = ""
+    # Menu 2
+    while opcion2 != 'x':
+        print("\tSeleccione alguna de las opciones por favor")
+        print("\tOpciones:")
+        print("\t1) Buscar proteina con mas alfa helices")
+        print("\t2) Buscar proteina con mas laminas beta")
+        print("\t3) Buscar proteina con ambas estrucuras")
+        print("\tx) Salir")
+        opcion2 = input("\t> ").lower()
+        # Seleccion del menu
+        match opcion2:
+            case "1":
+                print("\t>Ha seleccionado buscar las proteinas con mas "
+                        "alfa helices")
+                determinar_estructura(proteinas,"Alfa")
+                break
+            case "2":
+                print("\t>Ha seleccionado buscar las proteinas con mas "
+                        "laminas beta")
+                determinar_estructura(proteinas,"Beta")
+                break
+            case "3":
+                print("\t>Ha seleccionado buscar las proteinas con la misma "
+                        "cantidad de alfa helices y laminas beta")
+                determinar_estructura(proteinas, "Ambas")
+                break
+            case "x":
+                print("\t\tVolviendo al menu anterior")
+                break
+            case _:
+                print("\n_______________________________\n"
+                        "|¡Ingrese un valor pertinente!|\n"
+                        "_______________________________\n")
+
+
+def edicion(proteinas):
+    opcion2 = ""
+    # Menu 2
+    while opcion2 != 'x':
+        print("\tSeleccione alguna de las opciones por favor")
+        print("\tOpciones:")
+        print("\t1) Agregar")
+        print("\t2) Eliminar")
+        print("\t3) Editar")
+        print("\tx) Salir")
+        opcion2 = input("\t> ").lower()
+        # Seleccion del menu
+        match opcion2:
+            case "1":
+                print("\tHa seleccionado agregar\n")
+                agregar(proteinas)
+                print(f"Se ha agregardo la proteina "
+                        f"{proteinas[len(proteinas)- 1].
+                        imprimir_proteina_completa()}")
+                ordenar(proteinas)
+                for proteina in proteinas:
+                    print(proteina.get_codigo())
+                break
+            case "2":
+                print("\tHa seleccionado eliminar\n")
+                busca_codigo(proteinas, True)
+                break
+            case "3":
+                print("\tHa seleccionado editar\n")
+                editar(proteinas)
+                ordenar(proteinas)
+                break
+            case "x":
+                print("\t\tVolviendo al menu anterior\n")
+                break
+            case _:
+                print("_______________________________\n"
+                        "|¡Ingrese un valor pertinente!|\n"
+                        "_______________________________\n")
 
 
 def main():
+    # Generacion de lista
     proteinas = crear_lista()
-    indices = []
-    while len(indices) < len(proteinas):
-        indice = random.randint(0, len(proteinas) - 1)
-        if indice not in indices:
-            indices.append(indice)
-
-    for indice in indices:
-        proteina = proteinas[indice]
-        proteina2 = busqueda_bin(proteinas, proteina.get_codigo(), 0, len(proteinas)- 1)
-        print(proteina2)
-        proteinas[1484].imprimir_proteina()
-    print(len(indices))
-    """
-    for i in range(len(proteinas)):
-    print(proteinas[i].get_conteo())
-    """
-
+    # Menu
     print("Hola, bienvenido a un pequeño proyecto del modulo "
             "Algoritmo y Estrucura de datos")
     opcion = ""
@@ -153,33 +369,36 @@ def main():
         print("Seleccione alguna de las opciones por favor")
         print("\tOpciones:")
         print("\t1) Buscar proteina por codigo")
-        print("\t2) Buscar proteinas por tamanio")
-        print("\t3) Buscar proteinas con mas AA especifico")
-        print("\t4) Buscar proteinas por estructura secundaria")
-        print("\t5) Editar datos")
+        print("\t2) Buscar proteinas con mas AA")
+        print("\t3) Buscar proteinas por estructura")
+        print("\t4) Editar datos")
         print("\tx) Salir")
         opcion = input("\t> ").lower()
-
+        # Seleccion del menu
         match opcion:
             case "1":
-                print("\t>Ha seleccionado busqueda por codigo")
-                busca_codigo(proteinas)
+                print("\tHa seleccionado busqueda por codigo")
+                busca_codigo(proteinas, False)
             case "2":
-                print("\t>Ha seleccionado busqueda por tamanio")
-                busca_tamanio(proteinas)
-            case "3":
-                print("\t>Ha seleccionado busqueda por AA")
+                print("\tHa seleccionado busqueda por AA")
                 busca_aa(proteinas)
+            case "3":
+                print("\tHa seleccionado busqueda por estructura")
+                busca_estructura(proteinas)
             case "4":
-                print("\t>Ha seleccionado busqueda por estructura")
-            case "5":
-                print("\t>Ha seleccionado edicion")
+                print("\tHa seleccionado edicion")
+                edicion(proteinas)
             case "x":
-                print("\t\t정말 감사합니다. 곧 다시 오세요")
+                print("\t\tAdiós, vuelva pronto")
             case _:
-                print("_______________________________"
-                        "|¡Ingrese un valor pertinente!|"
-                        "_______________________________")
+                print("\n_______________________________\n"
+                        "|¡Ingrese un valor pertinente!|\n"
+                        "_______________________________\n")
+
+
+def prueba():
+
+    pass
 
 
 if __name__ == '__main__':
