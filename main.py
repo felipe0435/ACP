@@ -1,4 +1,5 @@
 import csv
+import time
 from heap import Heap
 from proteina import Proteina
 
@@ -24,7 +25,7 @@ def ordenar(proteinas):
         proteinas[i] = heap.get_vector()[i][1]
 
 
-def crear_lista():
+def crear_lista(cant):
     # Lista de proteinas
     proteinas = []
     # Abre el archivo
@@ -49,6 +50,8 @@ def crear_lista():
                     proteina.set_cant_est_beta()
                     proteinas.append(proteina)
             cont += 1
+            if len(proteinas) == cant:
+                return proteinas
     return proteinas
 
 
@@ -457,9 +460,20 @@ def main():
 
 
 def prueba():
-    for i in range(10):
-        pass
+    tiempos = []
+    for i in range(1, 7):
+        suma = 0
+        for _ in range(10):
+            ini = time.time()
+            lista = crear_lista(500 * i)
+            fin = time.time()
+            suma += (fin - ini)
+            print(len(lista))
+            print(fin- ini)
+        print(suma / 10)
+        tiempos.append(suma / 10)
+    print(tiempos)
 
 
 if __name__ == '__main__':
-    main()
+    prueba()
