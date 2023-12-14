@@ -39,23 +39,17 @@ def crear_lista():
                                                                 row[2],
                                                                 row[3])
                     proteinas[len(proteinas) - 1].set_aa_mas_frec()
+                    proteinas[len(proteinas) - 1].set_cant_est_alfa()
+                    proteinas[len(proteinas) - 1].set_cant_est_beta()
                 else:
                     # Genera el objeto y lo añande a la lista
                     proteina = Proteina(row[1], row[2], row[3])
                     proteina.set_aa_mas_frec()
+                    proteina.set_cant_est_alfa()
+                    proteina.set_cant_est_beta()
                     proteinas.append(proteina)
             cont += 1
     return proteinas
-
-
-def determinar_estructura(proteinas, estructura):
-    match estructura:
-        case "Alfa":
-            pass
-        case "Beta":
-            pass
-        case "Ambas":
-            pass
 
 
 def agregar(proteinas):
@@ -158,8 +152,8 @@ def agregar(proteinas):
 def editar(proteinas):
     codigo = ""
     while len(codigo) != 4:
-        print("\tIngrese acontinuacion un codigo de 4 caracteres, de los "
-                "cuales el primero debe ser un numero")
+        print("\tIngrese acontinuacion el codigo de PDB, de la proteina que "
+                "desea modificar:")
         codigo = input("\t> ").lower()
         if len(codigo) == 4:
             if not codigo[0].isnumeric():
@@ -245,12 +239,11 @@ def busca_codigo(proteinas, eliminar):
             print("\tVuelva a intentarlo.")
 
 
-def busca_aa(proteinas):
-    # Datos iniciales
+
+def busca_aa(proteinas, respuestas):
     AMINOACIDOS = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N",
                     "P", "Q", "R", "S", "T", "V", "W", "X", "Y", "Z"]
     amino_acido = ""
-    respuestas = []
     # Bandera para que solo ingrese 1 caracter
     while len(amino_acido) != 1:
         print("\tIngrese acontinuacion un aminoacido en codigo de 1 letra, de "
@@ -258,7 +251,7 @@ def busca_aa(proteinas):
                 "C, D, E, F, G, H, I, K, L, M, N, P, Q, R, S, T, V, W, X, Y, Z")
         amino_acido = input("\t> ").upper()
         # Aminoacido valido
-        if amino_acido in AMINOACIDOS:
+        if amino_acido in AMINOACIDOS and len(respuestas) == 0:
             heap = Heap(len(proteinas))
             for proteina in proteinas:
                 heap.arribo(proteina, proteina.get_aa_mas_frecuente()[0])
@@ -268,8 +261,20 @@ def busca_aa(proteinas):
                     respuestas.append(elem[1])
                 elif (elem[0] != amino_acido and len(respuestas) > 0):
                     break
-            for respuesta in respuestas:
-                respuesta.imprimir_proteina_resumen()
+            break
+        elif amino_acido in AMINOACIDOS and len(respuestas) > 0:
+            heap = Heap(len(respuestas))
+            for proteina in respuestas:
+                heap.arribo(proteina, proteina.get_aa_mas_frecuente()[0])
+            heap.heapsort_prioridad()
+            respuestas = []
+            for elem in heap.get_vector():
+                if elem[0] == amino_acido:
+                    respuestas.append(elem[1])
+                elif (elem[0] != amino_acido and len(respuestas) > 0):
+                    break
+            if len(respuestas) == 0:
+                respuestas = heap.get_vector()[0:len(heap.get_vector())]
             break
         # Salida
         elif amino_acido == "0":
@@ -278,9 +283,41 @@ def busca_aa(proteinas):
         # Otro intento
         else:
             print("\tVuelva a intentarlo.")
+    return respuestas
 
 
-def busca_estructura(proteinas):
+def filtrar(proteinas):
+    opcion = ""
+    respuestas = []
+    while opcion != 'x':
+        print("\tSeleccione alguna de las opciones por favor")
+        print("\tOpciones:")
+        print("\t1) Filtrar según el aa más común")
+        print("\t2) Filtrar según la estructura secundaria más común")
+        print("\tx) Salir")
+        opcion = input("\t> ").lower()
+        match opcion:
+            case '1':
+                respuestas = busca_aa(proteinas, respuestas)
+                print(len(respuestas))
+            case '2':
+                respuestas = busca_est(proteinas, respuestas)
+                print(len(respuestas))
+            case 'x':
+                pass
+            case '_':
+                print("\n_______________________________\n"
+                        "|¡Ingrese un valor pertinente!|\n"
+                        "_______________________________\n")
+
+    """
+    for respuesta in respuestas:
+                respuesta.imprimir_proteina_resumen()
+    """
+    # Datos iniciales
+
+
+def busca_est(proteinas, respuestas):
     opcion2 = ""
     # Menu 2
     while opcion2 != 'x':
@@ -296,17 +333,17 @@ def busca_estructura(proteinas):
             case "1":
                 print("\t>Ha seleccionado buscar las proteinas con mas "
                         "alfa helices")
-                determinar_estructura(proteinas,"Alfa")
+                respuestas = determinar_estructura(proteinas,"Alfa", respuestas)
                 break
             case "2":
                 print("\t>Ha seleccionado buscar las proteinas con mas "
                         "laminas beta")
-                determinar_estructura(proteinas,"Beta")
+                respuestas = determinar_estructura(proteinas,"Beta", respuestas)
                 break
             case "3":
                 print("\t>Ha seleccionado buscar las proteinas con la misma "
                         "cantidad de alfa helices y laminas beta")
-                determinar_estructura(proteinas, "Ambas")
+                respuestas = determinar_estructura(proteinas, "Ambas", respuestas)
                 break
             case "x":
                 print("\t\tVolviendo al menu anterior")
@@ -315,6 +352,34 @@ def busca_estructura(proteinas):
                 print("\n_______________________________\n"
                         "|¡Ingrese un valor pertinente!|\n"
                         "_______________________________\n")
+    return respuestas
+
+
+def determinar_estructura(proteinas, estructura, respuestas):
+    if len(respuestas) == 0:
+        heap = Heap(len(proteinas))
+        for proteina in proteinas:
+            heap.arribo(proteina, proteina.get_est_dominante())
+        heap.heapsort_prioridad()
+        for elem in heap.get_vector():
+            if elem[0] == estructura:
+                respuestas.append(elem[1])
+            elif (elem[0] != estructura and len(respuestas) > 0):
+                break
+    if len(respuestas) > 0:
+        heap = Heap(len(respuestas))
+        for proteina in respuestas:
+            heap.arribo(proteina, proteina.get_est_dominante())
+        heap.heapsort_prioridad()
+        print(len(respuestas))
+        respuestas = []
+        print(len(respuestas))
+        for elem in heap.get_vector():
+            if elem[0] == estructura:
+                respuestas.append(elem[1])
+            elif (elem[0] != estructura and len(respuestas) > 0):
+                break
+    return respuestas
 
 
 def edicion(proteinas):
@@ -369,9 +434,8 @@ def main():
         print("Seleccione alguna de las opciones por favor")
         print("\tOpciones:")
         print("\t1) Buscar proteina por codigo")
-        print("\t2) Buscar proteinas con mas AA")
-        print("\t3) Buscar proteinas por estructura")
-        print("\t4) Editar datos")
+        print("\t2) Aplicar filtros de búsquda")
+        print("\t3) Editar datos")
         print("\tx) Salir")
         opcion = input("\t> ").lower()
         # Seleccion del menu
@@ -381,11 +445,8 @@ def main():
                 busca_codigo(proteinas, False)
             case "2":
                 print("\tHa seleccionado busqueda por AA")
-                busca_aa(proteinas)
+                filtrar(proteinas)
             case "3":
-                print("\tHa seleccionado busqueda por estructura")
-                busca_estructura(proteinas)
-            case "4":
                 print("\tHa seleccionado edicion")
                 edicion(proteinas)
             case "x":
@@ -397,8 +458,8 @@ def main():
 
 
 def prueba():
-
-    pass
+    for i in range(10):
+        pass
 
 
 if __name__ == '__main__':

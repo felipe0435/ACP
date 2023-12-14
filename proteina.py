@@ -122,7 +122,7 @@ class Proteina(object):
         return self.aa_mas_frecuente
 
 
-    def get_estructura_dominante(self):
+    def get_est_dominante(self):
         return self.est_dominante
 
 
