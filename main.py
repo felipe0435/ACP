@@ -294,15 +294,20 @@ def filtrar(proteinas):
         print("\tOpciones:")
         print("\t1) Filtrar según el aa más común")
         print("\t2) Filtrar según la estructura secundaria más común")
+        print("\t3) Mostrar resultados")
+        print("\t4) Borrar filtros")
         print("\tx) Salir")
         opcion = input("\t> ").lower()
         match opcion:
             case '1':
                 respuestas = busca_aa(proteinas, respuestas)
-                print(len(respuestas))
             case '2':
                 respuestas = busca_est(proteinas, respuestas)
-                print(len(respuestas))
+            case '3':
+                for respuesta in respuestas:
+                    respuesta.imprimir_proteina_resumen()
+            case '4':
+                respuestas = []
             case 'x':
                 pass
             case '_':
@@ -310,10 +315,6 @@ def filtrar(proteinas):
                         "|¡Ingrese un valor pertinente!|\n"
                         "_______________________________\n")
 
-    """
-    for respuesta in respuestas:
-                respuesta.imprimir_proteina_resumen()
-    """
     # Datos iniciales
 
 
@@ -371,9 +372,7 @@ def determinar_estructura(proteinas, estructura, respuestas):
         for proteina in respuestas:
             heap.arribo(proteina, proteina.get_est_dominante())
         heap.heapsort_prioridad()
-        print(len(respuestas))
         respuestas = []
-        print(len(respuestas))
         for elem in heap.get_vector():
             if elem[0] == estructura:
                 respuestas.append(elem[1])
