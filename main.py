@@ -460,7 +460,7 @@ def main():
 
 def prueba():
     tiempos = []
-    for i in range(1, 7):
+    for i in range(1, 12):
         suma = 0
         for _ in range(10):
             ini = time.time()
@@ -475,4 +475,4 @@ def prueba():
 
 
 if __name__ == '__main__':
-    prueba()
+    main()
